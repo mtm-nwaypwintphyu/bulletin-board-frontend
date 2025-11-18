@@ -7,11 +7,14 @@
         <div class="form-group px-3 my-4">
           <label for="email">Email</label>
           <input type="text" id="email" v-model="email" class="form-control" placeholder="Enter your email address." />
+          <small v-if="errors.email" class="error-box">{{ errors.email }}</small>
         </div>
         <!-- Password  Field-->
         <div class="form-group px-3 my-4">
           <label for="password">Password</label>
           <input type="password" id="password" v-model="password" class="form-control" placeholder="Enter your password." />
+          <small v-if="errors.password" class="error-box">{{ errors.password }}</small>
+          <small v-if="errors.login" class="error-box">{{ errors.login }}</small>
         </div>
         <div class="row px-3 my-3">
           <!-- Remeber me checkbox -->
@@ -31,20 +34,33 @@
           </div>
           <!-- Login -->
           <div class="d-flex col-6 justify-content-end">
-            <button type="submit" class="btn btn-sm bg-custom-blue m-3 px-5">Login</button>
+            <button type="submit" class="btn btn-sm btn-custom-blue m-3 px-5">Login</button>
           </div>
         </div>
       </form>
     </div>
   </div>
+  <Loading :show="auth.loading" />
 </template>
 <script setup>
 import { ref } from 'vue';
 import HeaderRow from '~/components/HeaderRow.vue';
+import { useAuthStore } from '#imports';
+import Loading from '~/components/Loading.vue';
+import { useToast } from 'vue-toastification';
 
 const email = ref('');
 const password = ref('');
 const rememberMe = ref(false);
+const toast = useToast();
+
+const auth = useAuthStore();
+
+const errors = ref({
+  email: '',  
+  password: '',
+  login: ''
+})
 
 // Override default layout with empty
 definePageMeta({
@@ -56,9 +72,24 @@ function goToCreateAccount() {
   navigateTo('/create-account');
 }
 
-function handleLogin(){
+const handleLogin = async () => {
 
-}
+  errors.value.email = ''
+  errors.value.password = ''
+  errors.value.login = ''
+
+  if (!email.value) errors.value.email = 'Email is required!'
+  if (!password.value) errors.value.password = 'Password is required!'
+  if (errors.value.email || errors.value.password) return
+
+  const response = await auth.login(email.value, password.value, rememberMe.value)
+  if (auth.error) {
+      errors.value.login = auth.error.message; 
+    } else if (response && response.success) {
+      toast("Loggedin successfully.");
+      navigateTo('/'); 
+    }
+  }
 </script>
 
 <style scoped>

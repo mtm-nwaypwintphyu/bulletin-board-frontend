@@ -106,9 +106,16 @@ body {
   background-color: #6C7A89;
   color: var(--lighter);
 }
-
+.btn-custom-blue-dark:focus {
+  background-color: #505b67;
+  color: var(--lighter);
+}
 .btn-custom-blue:hover {
   background-color: var(--muted);
+  color: var(--light);
+}
+.btn-custom-blue:focus {
+  background-color: #4d5863;
   color: var(--light);
 }
 
@@ -248,4 +255,20 @@ input:checked + .slider:before {
 }
 .clickable:hover {
   background-color: var(--bs-table-hover-bg, #f0f8ff) !important; 
+}
+/* error box */
+.error-box{
+  color: var(--red);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+/* toast */
+.toast-wrapper {
+  background: var(--dark)!important;
+  box-shadow: none;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  text-align: center;
 }

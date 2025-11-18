@@ -50,8 +50,6 @@
 </template>
 
 <script setup>
-import { defineEmits, defineProps } from 'vue';
-
 const emit = defineEmits(['confirm', 'cancel']);
 const props = defineProps({
   isVisible: {

@@ -37,12 +37,12 @@
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              Zaw Zaw <Icon name="material-symbols:manage-accounts-rounded" class="fs-4" />
+              {{ user?.name }} <Icon name="material-symbols:manage-accounts-rounded" class="fs-4" />
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
               <li><nuxt-link class="dropdown-item" to="/user/profile">Profile</nuxt-link></li>
               <li><hr class="dropdown-divider" /></li>
-              <li><nuxt-link class="dropdown-item" to="/logout">Logout</nuxt-link></li>
+              <li><nuxt-link class="dropdown-item" @click.prevent="handleLogout">Logout</nuxt-link></li>
             </ul>
           </li>
         </ul>
@@ -54,8 +54,13 @@
 <script setup>
 import { defineProps } from 'vue';
 import { useRoute } from 'vue-router';
+import { useAuthStore } from '#imports';
+import { useToast } from 'vue-toastification';
 
 const route = useRoute();
+const auth = useAuthStore();
+const toast = useToast();
+const user = computed(() => auth.user)
 
 defineProps({
   hideCreateUserButton: {
@@ -67,6 +72,11 @@ const isActive = (path) => {
   return route.path === path;
 }
 
+const handleLogout = async() => {
+  await auth.logout()
+  toast("Loggedout successfully.");
+  navigateTo('/login')
+}
 </script>
 
 <style scoped>
