@@ -2,33 +2,14 @@
   <div class="container-fluid d-flex justify-content-center align-items-start p-4">
     <div class="card my-3 w-100 mx-auto card-custom d-flex flex-column rounded-4 bg-white shadow-lg">
       <div class="flex-shrink-0">
-        <HeaderRow title="Post List" />
+        <HeaderRow :title="`Post History of ${user.name}`" />
       </div>
-
-      <div class="mt-3 px-3 d-flex flex-column flex-md-row justify-content-between align-items-center flex-shrink-0">
-        
-        <form action="" method="POST" class="d-flex w-100 w-md-50 mb-2 mb-md-0 me-md-2">
-          <input type="text" v-model="searchQuery" class="form-control me-2" placeholder="Search title or user..." />
-          <button type="submit" class="btn btn-sm text-white bg-custom-soft-orange">Search</button>
-        </form>
-
-        <div class="d-flex w-100 w-md-50 justify-content-start justify-content-md-end">
-          <nuxt-link to="/post/create" class="btn btn-sm text-white mx-1 bg-custom-soft-green">
-            Create
-          </nuxt-link>
-          <nuxt-link to="/post/upload" class="btn btn-sm text-white mx-1 bg-custom-soft-yellow">
-            Upload
-          </nuxt-link>
-          <button class="btn btn-sm text-white mx-1 bg-custom-soft-purple">Download</button>
-        </div>
-      </div>
-
       <div class="posts-table-wrapper px-3 flex-grow-1 mt-3">
         <table class="table table-striped table-hover text-nowrap align-middle">
           <thead>
             <tr class="bg-light">
+              <th scope="col">ID</th>
               <th scope="col">Post Title</th>
-              <th scope="col">Post Description</th>
               <th scope="col">Posted User</th>
               <th scope="col">Posted Date</th>
               <th scope="col">Operations</th>
@@ -69,16 +50,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import HeaderRow from '~/components/HeaderRow.vue';
-import { useUserStore } from '~/stores/Admin/userStore';
+import { useAuthStore } from '#imports';
 import ConfirmModal from '~/components/PostConfirmModal.vue';
 import DetailModal from '~/components/PostDetailModal.vue';
 
 const searchQuery = ref('');
 const showDeleteModal = ref(false);
 const showDetailModal = ref(false);
-const userStore = useUserStore();
+const authStore = useAuthStore();
 
+const user = ref(authStore.user)
 const posts = ref([]);
 
 

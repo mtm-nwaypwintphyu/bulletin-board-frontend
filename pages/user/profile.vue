@@ -6,12 +6,12 @@
       <div class="row p-4 align-items-start">
         <div class="col-12 col-md-4 text-center mb-4 mb-md-0">
           <img 
-            :src="user.profile_url || 'https://placehold.co/150x150/0d6efd/ffffff?text=Profile'" 
-            alt="Profile Photo" 
-            class="img-fluid rounded-circle border border-primary border-3 shadow-sm"
+            :src="imageUrl" 
+            alt="Profile Photo"
+            class="img-fluid rounded-circle border border-3 shadow-sm"
             style="width: 150px; height: 150px; object-fit: cover;"
           />
-          <h5 class="mt-3 fw-bold text-primary">{{ user.name }}</h5>
+          <h5 class="mt-3 fw-bold">{{ user.name }}</h5>
           <p class="text-muted">{{ user.type === 0 ? 'Admin' : 'User' }}</p>
         </div>
         
@@ -25,7 +25,7 @@
               <tr>
                 <td class="col-4 fw-bold text-muted py-2">User Type</td>
                 <td class="col-8 py-2">
-                  <span :class="{'badge bg-primary': user.type === 0, 'badge bg-success': user.type === 1}">
+                  <span :class="{'badge ': user.type === 0, 'badge bg-success': user.type === 1}">
                     {{ user.type === 0 ? 'Admin' : 'Regular User' }}
                   </span>
                 </td>
@@ -50,7 +50,7 @@
           </table>
           
           <div class="d-flex justify-content-end mt-4">
-            <button class="btn btn-custom-blue px-4 shadow-sm" @click="toEditProfile()">Edit Profile</button>
+            <button class="btn btn-custom-blue px-4 shadow-sm" @click="navigateTo('/user/edit-profile')">Edit Profile</button>
           </div>
           
         </div>
@@ -62,24 +62,19 @@
 <script setup>
 import { ref } from 'vue';
 import HeaderRow from '~/components/HeaderRow.vue';
-import { useRouter } from 'vue-router';
+import { useAuthStore } from '#imports';
+import { useRuntimeConfig } from '#imports';
 
-const user = ref({
-    id: 1,
-    name: 'Nway',
-    type: 1,
-    email: 'nway@mail.com',
-    phone: '09898878776',
-    dob: '1995-10-25',
-    address: 'Yangon, Myanmar',
-    profile_url: 'sample'
-});
+const auth = useAuthStore();
+const config = useRuntimeConfig();
 
-const router = useRouter();
+const assetsBase = config.public.assetsBase;
+const user = ref(auth.user)
 
-function toEditProfile() {
-  router.push('/user/edit-profile');
-}
+const imageUrl = computed(() => {
+  return user.value.profile ? `${assetsBase}/${user.value.profile}` : 'https://placehold.co/150x150/0d6efd/ffffff?text=Profile'
+})
+
 </script>
 
 <style scoped>

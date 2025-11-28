@@ -15,9 +15,9 @@
           <div class="row align-items-start">
             
             <div class="col-md-3 mb-3 mb-md-0 d-flex justify-content-center">
-              <img :src="data.photoUrl || 'https://via.placeholder.com/150/f8f9fa/343a40?text=User'" 
+              <img :src="imageUrl"
                    alt="User Photo" 
-                   class="img-fluid rounded-circle shadow-sm" 
+                   class="img-fluid rounded shadow-sm" 
                    style="max-height: 150px; max-width: 150px;">
             </div>
             
@@ -38,11 +38,11 @@
                   </tr>
                   <tr>
                     <td class="col-4 fw-bold py-2">Created User</td>
-                    <td class="col-8 py-2">{{ data.creator }}</td>
+                    <td class="col-8 py-2">{{ data.creator.name }}</td>
                   </tr>
                   <tr>
                     <td class="col-4 fw-bold py-2">Type</td>
-                    <td class="col-8 py-2">{{ data.type }}</td>
+                    <td class="col-8 py-2">{{ data.type == 0 ? 'Admin' : 'User' }}</td>
                   </tr>
                   <tr>
                     <td class="col-4 fw-bold py-2">Phone</td>
@@ -73,7 +73,10 @@
 </template>
 
 <script setup>
+import { useRuntimeConfig } from '#app'
 const emit = defineEmits(['cancel']);
+const config = useRuntimeConfig()
+const assetsBase = config.public.assetsBase
 const props = defineProps({
   isVisible: {
     type: Boolean,
@@ -87,6 +90,9 @@ const props = defineProps({
     required: true
   }
 });
+const imageUrl = computed(() => {
+  return props.data.profile ? `${assetsBase}/${props.data.profile}` : 'https://via.placeholder.com/150/f8f9fa/343a40?text=User'
+})
 
 function cancelAction() {
   emit('cancel');

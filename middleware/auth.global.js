@@ -13,7 +13,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   }
    await authStore.fetchUser()
 
-  if (authStore.token && (to.path === '/login' || to.path === '/create-account')) {
+  if (authStore.token && (to.path === '/login' || to.path === '/create-account' || to.path == '/create-confirm')) {
     return navigateTo('/');
   }
 });

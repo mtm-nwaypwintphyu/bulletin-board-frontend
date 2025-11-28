@@ -29,6 +29,45 @@ export const useAuthStore = defineStore('auth', {
         }
     },
 
+    // Register user
+    async register(params) {
+      this.loading = true
+      this.error = null
+      const api = useApi()
+
+      try {
+        const response = await api.post('/create-account', params)
+
+        return response
+      } catch (err) {
+        const status = err.response?.status
+
+        if (status === 422) {
+          this.error = {
+            message: err.response.data.message || 'Validation failed',
+            errors: err.response.data.errors || {}
+          }
+        } else if (status === 409) {
+          const conflictField = err.response.data.message.includes('Name') ? 'name' : 'email'
+          this.error = {
+            message: err.response.data.message || 'Conflict error',
+            errors: {
+              [conflictField]: [err.response.data.message || 'Conflict']
+            }
+          }
+        } else {
+          this.error = {
+            message: err.message || 'Something went wrong',
+            errors: {}
+          }
+        }
+        return null
+      } finally {
+        this.loading = false
+      }
+    },
+
+
     // Login user
     async login(email, password, rememberMe) {
       this.loading = true

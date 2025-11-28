@@ -6,12 +6,10 @@
         
         <div class="mt-3 px-3 d-flex justify-content-between align-items-center">
           <form @submit.prevent="handleSearch" class="d-flex flex-wrap align-items-center">
-            
             <div class="mb-2 mb-md-0 d-flex align-items-center me-3">
               <label for="name" class="me-2">Name:</label>
               <input type="text" id="name" v-model="searchName" class="form-control" placeholder="Name">
             </div>
-            
             <div class="mb-2 mb-md-0 d-flex align-items-center me-3">
               <label for="email" class="me-2">Email:</label>
               <input type="text" id="email" v-model="searchEmail" class="form-control" placeholder="Email">
@@ -21,17 +19,15 @@
               <label for="from" class="me-2">From:</label>
               <input type="date" id="from" v-model="searchFrom" class="form-control" placeholder="From">
             </div>
-            
             <div class="mb-2 mb-md-0 d-flex align-items-center me-3">
               <label for="to" class="me-2">To:</label>
               <input type="date" id="to" v-model="searchTo" class="form-control" placeholder="To">
             </div>
-            
             <button type="submit" class="btn bg-custom-soft-orange text-light">Search</button>
           </form>
+          <button class="btn-custom-blue btn" @click="navigateTo('/user/post-history')">Post History</button>
         </div>
       </div>
-      
       <div class="users-table-wrapper px-3 flex-grow-1">
         <table class="table table-hover table-striped text-nowrap align-middle">
           <thead>
@@ -49,22 +45,19 @@
               <th scope="col">Operation</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="user in users" :key="user.id" @click="showUserDetailModal(user)" class="clickable">
-              
-              <th scope="row">{{ index + 1 }}</th> 
-              
+          <tbody  v-if="!userStore.loading">
+              <tr v-if="!users.length"><td colspan="11" class="text-center py-3">There is no data.</td></tr>
+              <tr v-for="(user,index) in users" :key="user.id" @click="showUserDetailModal(user)" class="clickable">
+              <th scope="row">{{ index + 1 + (currentPage - 1) * perPage }}.</th>
               <td>{{ user.name }}</td>
               <td>{{ user.email }}</td>
-              <td>{{ user.creator }}</td>
-              <td>{{ user.type }}</td>
+              <td>{{ user.creator.name }}</td>
+              <td>{{ user.type == 0 ? 'Admin' : 'User' }}</td>
               <td>{{ user.phone }}</td>
               <td>{{ user.dob }}</td>
               <td>{{ user.address }}</td>
-              
-              <td>{{ user.created_at }}</td>
-              <td>{{ user.updated_at }}</td>
-              
+              <td>{{ formatDate(user.created_at) }}</td>
+              <td>{{ formatDate(user.updated_at) }}</td>
               <td>
                 <button @click.stop="openConfirmModal(user)" class="btn btn-custom-red btn-sm me-1">
                   Delete
@@ -92,56 +85,78 @@
       @cancel="closeModal"
     />
   </div>
+  <Pagination
+    :current-page="currentPage"
+    :total-pages="totalPages"
+    @updatePage="handlePageChange"
+  />
+  <Loading :show="userStore.loading"/>
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue';
 import HeaderRow from '~/components/HeaderRow.vue';
 import DetailModal from '~/components/UserDetailModal.vue';
 import ConfirmModal from '~/components/UserConfirmModal.vue';
-import { ref } from 'vue';
+import Pagination from '~/components/Pagination.vue';
+import Loading from '~/components/Loading.vue';
+import dayjs from 'dayjs';
+import { useUserStore } from '~/stores/Admin/userStore';
+import { useToast } from 'vue-toastification';
+
+const userStore = useUserStore();
+const toast = useToast();
 
 const searchName = ref('');
 const searchEmail = ref('');
 const searchFrom = ref('');
 const searchTo = ref('');
+const users = ref([]);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const perPage = 7;
 
-function handleSearch() {
-  console.log('Searching with:', {
-    name: searchName.value,
-    email: searchEmail.value,
-    from: searchFrom.value,
-    to: searchTo.value,
-  });
+onMounted(()=>{
+  getAllUsers(currentPage.value);
+})
+
+const getAllUsers = async(page = 1) => {
+  const searchQuery = createSearchQuery();
+  const params = {
+    per_page: perPage,
+    page,
+    search: searchQuery
+  }
+  const response = await userStore.fetchAllUsers(params);
+  users.value = response.data.data;
+  currentPage.value = response.data.current_page;
+  totalPages.value = response.data.last_page;
 }
 
+const formatDate = (date) => {
+  return date ? dayjs(date).format('YYYY-MM-DD'): ''
+}
 
-const users = ref([
-  { 
-    id: 1,
-    name: 'John Doe',
-    email: 'john@example.com',
-    creator: 'Admin',
-    type: 'Member',
-    phone: '123-456-7890',
-    dob: '1990-01-15',
-    address: "Yangon",
-    created_at: '2024-01-01',
-    updated_at: '2024-05-10'
-  },
-  {
-    id: 2,
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    creator: 'Editor',
-    type: 'Staff',
-    phone: '987-654-3210',
-    dob: '1985-11-20',
-    address: "Mandalay",
-    created_at: '2023-12-15',
-    updated_at: '2024-06-25'
-  }
-]);
+const handlePageChange = (newPage) => {
+  currentPage.value = newPage;
+  getAllUsers(currentPage.value);
+};
 
+// combine all search types
+const createSearchQuery = () => {
+  const queryParts = [];
+
+  if (searchName.value) queryParts.push(`name:${searchName.value}`);
+  if (searchEmail.value) queryParts.push(`email:${searchEmail.value}`);
+  if (searchFrom.value) queryParts.push(`from:${searchFrom.value}`);
+  if (searchTo.value) queryParts.push(`to:${searchTo.value}`);
+
+  return queryParts.join('&');
+}
+const handleSearch = () => {
+  currentPage.value = 1;
+  getAllUsers(currentPage.value);
+}
 
 const userDetail = ref(null); 
 const showDetailModal = ref(false); 
@@ -157,9 +172,20 @@ function openConfirmModal(user) {
   userDetail.value = user;
 }
 
-function handleDelete(){
-  console.log('Deleting user:', userDetail.value.id);
+function handleDelete(user){
+  confirmDeleteUser(user.id)
+  getAllUsers(currentPage.value);
   closeModal();
+}
+
+const confirmDeleteUser = async ($id) => {
+  const response = await userStore.delete($id);
+
+  if (userStore.error) {
+    toast(userStore.error)
+  } else if (response && response.success) {
+    toast(response.message);
+  }
 }
 
 function closeModal() {

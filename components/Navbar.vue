@@ -49,6 +49,7 @@
       </div>
     </div>
   </nav>
+  <Loading :show="auth.loading"/>
 </template>
 
 <script setup>
@@ -56,6 +57,7 @@ import { defineProps } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '#imports';
 import { useToast } from 'vue-toastification';
+import Loading from './Loading.vue';
 
 const route = useRoute();
 const auth = useAuthStore();
@@ -103,5 +105,10 @@ const handleLogout = async() => {
 
 .nav-link:hover {
   color: var(--bg-soft-orange);
+}
+
+.dropdown-item:focus {
+  outline: none;
+  background-color: #2C3E50;
 }
 </style>
