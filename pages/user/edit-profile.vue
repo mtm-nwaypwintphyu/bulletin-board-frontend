@@ -20,7 +20,7 @@
           </div>
         </div>
 
-        <div class="row my-3 align-items-center">
+        <div  v-show="user.type == '0'" class="row my-3 align-items-center">
           <label for="type" class="col-md-3 col-form-label text-md-end">Type</label>
           <div class="col-md-8">
             <select v-model="type" name="type" class="form-control" id="type">
@@ -147,6 +147,8 @@ const handleSubmit = async() => {
     type: type.value,
     profile: new_pf.value
   }
+
+  console.log("params", params)
   const response = await userStore.update(params)
   if (userStore.error) {
     const backendErrors = toRaw(userStore.error)?.errors || {};
