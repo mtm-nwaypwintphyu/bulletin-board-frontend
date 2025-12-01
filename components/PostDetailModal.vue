@@ -28,33 +28,35 @@
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Created User</td>
-                <td class="col-8 py-2">{{ data.status }}</td>
+                <td class="col-8 py-2">{{ data.creator.name }}</td>
+              </tr>
+              <tr>
+                <td class="col-4 fw-bold py-2">Status</td>
+                <td class="col-8 py-2">{{ data.status == 1 ? "Active" : "Inactive" }}</td>
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Updated Date</td>
-                <td class="col-8 py-2">{{ data.date }}</td>
+                <td class="col-8 py-2">{{ formatDate(data.created_at) }}</td>
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Updated User</td>
-                <td class="col-8 py-2">{{ data.date }}</td>
+                <td class="col-8 py-2">{{ data.creator.name }}</td>
               </tr>
             </tbody>
           </table>
-          
         </div>
 
         <div class="modal-footer justify-content-end">
           <button type="button" @click="cancelAction" class="btn btn-custom-blue">Cancel</button>
         </div>
-        
       </div>
     </div>
   </div>
-  
   <div v-if="isVisible" class="modal-backdrop fade show"></div>
 </template>
 
 <script setup>
+import dayjs from 'dayjs';
 const emit = defineEmits(['cancel']);
 const props = defineProps({
   isVisible: {
@@ -70,6 +72,9 @@ const props = defineProps({
   }
 });
 
+const formatDate = (date) => {
+  return date ? dayjs(date).format('YYYY-MM-DD'): ''
+}
 function cancelAction() {
   emit('cancel');
 }

@@ -170,6 +170,9 @@ input[type="checkbox"]:checked::after {
 .size-2 {
   font-size: 19px;
 }
+.w-300 {
+  width: 300px;
+}
 
 a {
   text-decoration: none;
@@ -226,6 +229,16 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(14px);
 }
+
+/* disabled slider */
+.switch-disabled .slider {
+  background-color: #677380b1;
+  cursor: not-allowed;
+}
+
+.switch-disabled input:checked + .slider {
+  background-color: #677380b1; 
+}
 /* modal close btn */
 .modal-close-btn {
   position: absolute;
@@ -271,4 +284,43 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   text-align: center;
+}
+
+/* pagingation */
+.btn-pagination {
+  background-color: var(--bg-soft-orange);
+  color: var(--dark);
+  border: none;
+  padding: 6px 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.page-link {
+  color:#2C3E50 !important;
+}
+
+.btn-pagination:hover:not(:disabled) {
+  background-color: #d88c64;
+  color: var(--lighter);
+}
+
+.btn-pagination:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-pagination:focus,
+.btn-pagination:active {
+  outline: none;
+  box-shadow: none;
+}
+
+/* text overflow hidden in table */
+table td {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

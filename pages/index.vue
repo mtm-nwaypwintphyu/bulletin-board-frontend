@@ -7,8 +7,8 @@
 
       <div class="mt-3 px-3 d-flex flex-column flex-md-row justify-content-between align-items-center flex-shrink-0">
         
-        <form action="" method="POST" class="d-flex w-100 w-md-50 mb-2 mb-md-0 me-md-2">
-          <input type="text" v-model="searchQuery" class="form-control me-2" placeholder="Search title or user..." />
+        <form @submit.prevent="handleSearch" method="POST" class="d-flex w-100 w-md-50 mb-2 mb-md-0 me-md-2">
+          <input type="text" v-model="searchQuery" class="form-control me-2" placeholder="Search by title or description..." />
           <button type="submit" class="btn btn-sm text-white bg-custom-soft-orange">Search</button>
         </form>
 
@@ -27,22 +27,27 @@
         <table class="table table-striped table-hover text-nowrap align-middle">
           <thead>
             <tr class="bg-light">
+              <th>No.</th>
               <th scope="col">Post Title</th>
               <th scope="col">Post Description</th>
+              <th scope="col">Status</th>
               <th scope="col">Posted User</th>
               <th scope="col">Posted Date</th>
               <th scope="col">Operations</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="post in posts" :key="post.id" @click="showPostDetail(post)" class="clickable">
+            <tr v-if="!posts.length"><td colspan="11" class="text-center py-3">There is no data.</td></tr>
+            <tr v-for="(post, index) in posts" :key="post.id" @click="showPostDetail(post)" class="clickable">
+              <th scope="row"> {{ index + 1 + (currentPage-1) * perPage }}. </th>
               <td>{{ post.title }}</td>
               <td>{{ post.description }}</td>
-              <td>{{ post.user }}</td>
-              <td>{{ post.date }}</td>
+              <td>{{ post.status == 1 ? "Active" : "Inactive" }}</td>
+              <td>{{ post.creator.name }}</td>
+              <td>{{ formatDate(post.created_at) }}</td>
               <td>
                 <button @click.stop="openConfirmModal(post)" class="btn btn-custom-red btn-sm me-1">Delete</button>
-                <button @click.stop="showPostDetail(post)" class="btn btn-custom-blue btn-sm text-white">Edit</button>
+                <button @click.stop="toEditPost(post)" class="btn btn-custom-blue btn-sm text-white">Edit</button>
               </td>
             </tr>
           </tbody>
@@ -53,8 +58,8 @@
     <ConfirmModal
       :isVisible="showDeleteModal"
       title="Delete Confirm"
-      message="Are you sure you want to delete this post?"
-      :data="postToDelete"
+      :message="auth.user.type == 1 ? 'Are you sure to delete this post?' : 'Are you sure to inactivate this post status?'"
+      :data="postDetail"
       @confirm="handleDelete"
       @cancel="closeModal"
     />
@@ -65,42 +70,68 @@
       @cancel="closeModal"
     />
   </div>
+  <Pagination
+    :current-page="currentPage"
+    :total-pages="totalPages"
+    @updatePage="handlePageChange"
+  />
+  <Loading :show="postStore.loading" />
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import HeaderRow from '~/components/HeaderRow.vue';
 import ConfirmModal from '~/components/PostConfirmModal.vue';
 import DetailModal from '~/components/PostDetailModal.vue';
+import { usePostStore } from '#imports';
+import { useAuthStore } from '#imports';
+import { useToast } from 'vue-toastification';
+import Loading from '~/components/Loading.vue';
+import Pagination from '~/components/Pagination.vue';
+import { useRouter } from 'vue-router';
+import dayjs from 'dayjs';
 
+const postStore = usePostStore();
+const auth = useAuthStore();
+const router = useRouter();
 const searchQuery = ref('');
+const toast = useToast();
 const showDeleteModal = ref(false);
 const showDetailModal = ref(false);
-
-const posts = ref([
-  { 
-    id: 1,
-    title: 'Sample Post 1',
-    description: 'This is a description for post 1.',
-    user: 'User1',
-    date: '2025-11-10',
-    status: 1
-  },
-  {
-    id: 2,
-    title: 'Sample Post 2',
-    description: 'This is a description for post 2.',
-    user: 'User2',
-    date: '2025-11-11',
-    status: 0
-  }
-]);
-
-const postToDelete = ref(null);
+const currentPage = ref(1);
+const totalPages = ref(1);
+const perPage = 7;
 const postDetail = ref(null);
+const posts = ref([]);
+
+onMounted(() => {
+  getAllPosts(currentPage.value)
+})
+
+const handleSearch = () => {
+  currentPage.value = 1;
+  getAllPosts(currentPage.value);
+}
+
+const formatDate = (date) => {
+  return date ? dayjs(date).format('YYYY-MM-DD'): ''
+}
+
+const getAllPosts = async(page = 1) => {
+  const params = {
+    search: searchQuery.value,
+    per_page: perPage,
+    page
+  }
+
+  const response = await postStore.fetchAllPosts(params);
+  posts.value = response.data.data;
+  currentPage.value = response.data.current_page;
+  totalPages.value = response.data.last_page;
+}
 
 function openConfirmModal(post) {
-  postToDelete.value = post;
+  postDetail.value = post;
   showDeleteModal.value = true;
 }
 
@@ -114,15 +145,28 @@ function closeModal() {
   showDetailModal.value = false;
 }
 
-function handleDelete() {
-  console.log('Post deleted:', postToDelete.value);
+function handleDelete(post) {
+  confirmDeletePost(post.id)
+  getAllPosts(currentPage.value);
   closeModal();
 }
 
+const confirmDeletePost = async (id, status) => {
+  const response = await postStore.delete(id);
+
+  if(postStore.error) {
+    toast(postStore.error)
+  } else if (response && response.success) {
+    toast(response.message);
+  }
+}
+
+const toEditPost = (post) => {
+  router.push({ name: 'post-edit', query: {id: post.id}}) 
+}
 </script>
 
 <style scoped>
-
 .card-custom {
   max-width: 1300px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
