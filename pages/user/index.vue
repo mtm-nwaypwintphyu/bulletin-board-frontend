@@ -25,7 +25,10 @@
             </div>
             <button type="submit" class="btn bg-custom-soft-orange text-light">Search</button>
           </form>
-          <button class="btn-custom-blue btn" @click="navigateTo('/user/post-history')">Post History</button>
+          <div class="row col-2 justify-content-between mx-3">
+            <button class="col-6 btn-custom-blue btn" @click="navigateTo('/user/post-history')">Post History</button>
+            <button v-if="isAdmin" @click="openUploadModal" class="col-5 btn bg-custom-soft-green"><Icon name="material-symbols:upload" class="fs-5" /></button>
+          </div>
         </div>
       </div>
       <div class="users-table-wrapper px-3 flex-grow-1">
@@ -84,6 +87,13 @@
       :data="userDetail"
       @cancel="closeModal"
     />
+    <UploadCsvModal
+      :isVisible="showUploadModal"
+      title="CSV Upload"
+      @cancel="closeModal"
+      @download="handleCsvTemplateDownload"
+      @upload="handleCsvUpload"
+    />
   </div>
   <Pagination
     :current-page="currentPage"
@@ -97,14 +107,17 @@
 import { ref, onMounted } from 'vue';
 import HeaderRow from '~/components/HeaderRow.vue';
 import DetailModal from '~/components/UserDetailModal.vue';
+import UploadCsvModal from '~/components/UploadCsvModal.vue';
 import ConfirmModal from '~/components/UserConfirmModal.vue';
 import Pagination from '~/components/Pagination.vue';
 import Loading from '~/components/Loading.vue';
 import dayjs from 'dayjs';
 import { useUserStore } from '~/stores/Admin/userStore';
+import { useAuthStore } from '#imports';
 import { useToast } from 'vue-toastification';
 
 const userStore = useUserStore();
+const auth = useAuthStore();
 const toast = useToast();
 
 const searchName = ref('');
@@ -115,6 +128,8 @@ const users = ref([]);
 const currentPage = ref(1);
 const totalPages = ref(1);
 const perPage = 7;
+const isAdmin = auth.user.type == 0;
+
 
 onMounted(()=>{
   getAllUsers(currentPage.value);
@@ -161,6 +176,7 @@ const handleSearch = () => {
 const userDetail = ref(null); 
 const showDetailModal = ref(false); 
 const showDeleteModal = ref(false); 
+const showUploadModal = ref(false);
 
 function showUserDetailModal(user) {
   showDetailModal.value = true;
@@ -191,13 +207,60 @@ const confirmDeleteUser = async ($id) => {
 function closeModal() {
   showDetailModal.value = false;
   showDeleteModal.value = false;
+  showUploadModal.value = false;
   userDetail.value = null;
 }
+
+// show upload modal
+const openUploadModal = () => {
+  console.log("hello")
+  showUploadModal.value = true
+}
+
+const handleCsvTemplateDownload = () => {
+  const headers = [
+    'name',
+    'email',
+    'phone',
+    'address',
+    'dob'
+  ]
+
+  const rows = [
+    ['Sample 01', 'sample01@mail.com', '0123456789', '123 Sample Address', '1990-01-01'],
+    ['Sample 03', 'sample03@mail.com', '0987654321', '456 Sample Address', '1992-05-10']
+  ]
+
+  const csvContent = [
+    headers.join(','),
+    ...rows.map(r => r.join(','))
+  ].join('\n')
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const link = document.createElement('a')
+  link.href = URL.createObjectURL(blob)
+  link.download = 'user_import_template.csv'
+  link.click()
+  URL.removeObjectURL(link.href)
+}
+
+const handleCsvUpload = async (file) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await userStore.uploadCsv(formData);
+  if (userStore.error) {
+    toast(userStore.error.message)
+  } else if (response?.success) {
+    toast(response.message)
+  }
+}
+
 </script>
 
 <style scoped>
 .card-custom {
-  max-width: 1300px;
+  max-width: 1400px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   min-height: calc(100vh - 183px);
 }

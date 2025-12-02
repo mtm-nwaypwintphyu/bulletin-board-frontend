@@ -37,7 +37,7 @@
               data-bs-toggle="dropdown"
               aria-expanded="false"
             >
-              {{ user?.name }} <Icon name="material-symbols:manage-accounts-rounded" class="fs-4" />
+              {{ user?.name }} <Icon name="material-symbols:account-circle" class="fs-4" />
             </button>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
               <li><nuxt-link class="dropdown-item" to="/user/profile">Profile</nuxt-link></li>

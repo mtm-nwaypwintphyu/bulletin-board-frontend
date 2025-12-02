@@ -96,6 +96,30 @@ export const useUserStore = defineStore('user', {
       }finally {
         this.loading = false
       }
+    },
+    // upload user csv
+    async uploadCsv(formData) {
+      this.loading = true;
+      this.error = null;
+      const api = useApi();
+
+      try {
+        const response = await api.post('/users/import', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        return response;
+      } catch (err) {
+          this.error = {
+            message: 'Validation failed',
+            errors: {},
+        }
+        return null;
+      } finally {
+        this.loading = false;
+      }
     }
+
   }
 })
