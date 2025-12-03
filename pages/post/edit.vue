@@ -5,13 +5,13 @@
       <form @submit.prevent="handleSubmit">
         <div class="form-group px-3 my-3">
           <label class="required-label" for="title">Title</label>
-          <input type="text" id="title" v-model="postForm.form.title" class="form-control" :disabled="auth.user.type == 0"/>
+          <input type="text" id="title" v-model="postForm.form.title" class="form-control" :disabled="auth.user.type == 0 &&  data?.create_user_id != auth.user.id"/>
           <small v-if="errors.title" class="error-box">{{ errors.title }}</small>
         </div>
 
         <div class="form-group px-3 my-3">
           <label class="required-label" for="description">Description</label>
-          <textarea name="" id="" class="form-control" rows="6" v-model="postForm.form.description" :disabled="auth.user.type == 0"></textarea>
+          <textarea name="" id="" class="form-control" rows="6" v-model="postForm.form.description" :disabled="auth.user.type == 0 && data?.create_user_id != auth.user.id"></textarea>
           <small v-if="errors.description" class="error-box">{{ errors.description }}</small>
         </div>
 
@@ -51,6 +51,7 @@ const route = useRoute();
 const postForm = usePostFormStore();
 const postStore = usePostStore();
 const auth = useAuthStore();
+const data = ref(null);
 
 const errors = reactive({
   title: '',
@@ -60,13 +61,12 @@ const errors = reactive({
 onMounted(async () => {
   const postId = route.query.id;
   const response = await postStore.fetchPostDetail(postId);
-  const data = response.data;
-
-  if (data) {
+  data.value = response.data;
+  if (data.value) {
     postForm.form.id = postId;
-    postForm.form.title = data.title;
-    postForm.form.description = data.description;
-    postForm.form.status = data.status === 1;
+    postForm.form.title = data.value.title;
+    postForm.form.description = data.value.description;
+    postForm.form.status = data.value.status === 1;
   }
 })
 
@@ -90,6 +90,6 @@ const handleSubmit = async() => {
 .card-custom {
   max-width: 800px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  height: 504px;
+  height: 530px;
 }
 </style>

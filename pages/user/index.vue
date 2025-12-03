@@ -26,8 +26,11 @@
               <label for="to" class="me-2">To:</label>
               <input type="date" id="to" v-model="searchTo" class="form-control" placeholder="To">
             </div>
-            
             <button type="submit" class="btn bg-custom-soft-orange text-light">Search</button>
+            <button @click="navigateTo('/user/post-history')" class="ms-5 d-flex btn btn-sm bg-custom-blue ms-1 align-items-center justify-content-center">
+              Post History
+              <Icon name="material-symbols:history" class="fs-5 ms-2" />
+            </button>
           </form>
         </div>
       </div>
@@ -51,7 +54,6 @@
           </thead>
           <tbody>
             <tr v-for="user in users" :key="user.id" @click="showUserDetailModal(user)" class="clickable">
-              
               <th scope="row">{{ index + 1 }}</th> 
               
               <td>{{ user.name }}</td>
@@ -64,7 +66,6 @@
               
               <td>{{ user.created_at }}</td>
               <td>{{ user.updated_at }}</td>
-              
               <td>
                 <button @click.stop="openConfirmModal(user)" class="btn btn-custom-red btn-sm me-1">
                   Delete

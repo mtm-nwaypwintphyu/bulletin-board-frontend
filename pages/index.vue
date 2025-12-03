@@ -11,15 +11,23 @@
           <input type="text" v-model="searchQuery" class="form-control me-2" placeholder="Search by title or description..." />
           <button type="submit" class="btn btn-sm text-white bg-custom-soft-orange">Search</button>
         </form>
-
         <div class="d-flex w-100 w-md-50 justify-content-start justify-content-md-end">
-          <nuxt-link to="/post/create" class="btn btn-sm text-white mx-1 bg-custom-soft-green">
+          <nuxt-link to="/post/create" class="btn btn-sm text-white bg-custom-soft-green d-flex align-items-center justify-content-center">
             Create
+            <Icon name="material-symbols:add" class="fs-5 ms-2" />
           </nuxt-link>
-          <nuxt-link to="/post/upload" class="btn btn-sm text-white mx-1 bg-custom-soft-yellow">
+          <nuxt-link to="/post/upload" class="btn btn-sm text-white mx-1 bg-custom-soft-purple d-flex align-items-center justify-content-center">
             Upload
+            <Icon name="material-symbols:upload" class="fs-5 ms-2" />
           </nuxt-link>
-          <button class="btn btn-sm text-white mx-1 bg-custom-soft-purple">Download</button>
+          <button @click="downloadPost" class="d-flex btn btn-sm bg-custom-soft-yellow align-items-center justify-content-center">
+            Download
+            <Icon name="material-symbols:download" class="fs-5 ms-2" />
+          </button>
+          <button @click="navigateTo('/user/post-import-history')" class="d-flex btn btn-sm bg-custom-blue ms-1 align-items-center justify-content-center">
+            Import History
+            <Icon name="material-symbols:history" class="fs-5 ms-2" />
+          </button>
         </div>
       </div>
 
@@ -36,7 +44,7 @@
               <th scope="col">Operations</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody v-if="!postStore.loading">
             <tr v-if="!posts.length"><td colspan="11" class="text-center py-3">There is no data.</td></tr>
             <tr v-for="(post, index) in posts" :key="post.id" @click="showPostDetail(post)" class="clickable">
               <th scope="row"> {{ index + 1 + (currentPage-1) * perPage }}. </th>
@@ -130,6 +138,11 @@ const getAllPosts = async(page = 1) => {
   totalPages.value = response.data.last_page;
 }
 
+const handlePageChange = (newPage) => {
+  currentPage.value = newPage;
+  getAllPosts(currentPage.value);
+};
+
 function openConfirmModal(post) {
   postDetail.value = post;
   showDeleteModal.value = true;
@@ -151,19 +164,68 @@ function handleDelete(post) {
   closeModal();
 }
 
-const confirmDeletePost = async (id, status) => {
+const confirmDeletePost = async (id) => {
   const response = await postStore.delete(id);
 
   if(postStore.error) {
     toast(postStore.error)
   } else if (response && response.success) {
     toast(response.message);
+    getAllPosts(currentPage.value)
   }
 }
 
 const toEditPost = (post) => {
   router.push({ name: 'post-edit', query: {id: post.id}}) 
 }
+
+const downloadPost = async () => {
+  try {
+    const response = await postStore.fetchAllPosts({ search: searchQuery.value, per_page: 100000 });
+    const allPosts = response.data.data;
+
+    if (!allPosts.length) {
+      toast("No posts available to download.");
+      return;
+    }
+
+    const headers = ["ID.", "Post Title", "Post Description", "Status", "Create User Id", "Updated User Id", "Deleted User ID","Deleted at","Created at", "Updated at"];
+
+    const rows = allPosts.map((post, index) => [
+      index + 1,
+      post.title,
+      post.description,
+      post.status == 1 ? "Active" : "Inactive",
+      post.create_user_id,
+      post.updated_user_id,
+      post.deleted_user_id,
+      post.deleted_at,
+      formatDate(post.created_at),
+      formatDate(post.updated_at)
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map(row => row.join(","))
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", "posts.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  } catch (error) {
+    console.error("Error downloading posts:", error);
+    toast("Failed to download posts. Please try again.");
+  }
+};
+
 </script>
 
 <style scoped>
