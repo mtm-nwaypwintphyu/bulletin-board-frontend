@@ -9,17 +9,19 @@
           <thead>
             <tr class="bg-light">
               <th>No.</th>
-              <th scope="col">Post ID</th>
-              <th scope="col">User Name</th>
-              <th scope="col">Description</th>
-              <th scope="col">Created at</th>
+              <th>Post ID</th>
+              <th>Post Title</th>
+              <th>User Name</th>
+              <th>Description</th>
+              <th>Created at</th>
             </tr>
           </thead>
           <tbody v-if="!postStore.loading">
             <tr v-if="!postHistory.length"><td colspan="7" class="text-center py-3">No post history found.</td></tr>
             <tr v-for="(history, index) in postHistory" :key="history.id">
               <th scope="row"> {{ index + 1 + (currentPage-1) * perPage }}. </th>
-              <td>{{ history.post.title }}</td>
+              <td>{{ history?.post.id }}</td>
+              <td>{{ history?.post?.title }}</td>
               <td>{{ history.user.name }}</td>
               <td>{{ history.change_description }}</td>
               <td>{{ formatDate(history.created_at) }}</td>
