@@ -50,7 +50,6 @@ const name = ref('');
 const email = ref('');
 const password = ref('');
 const password_confirmation = ref('');
-const router = useRouter();
 const auth = useAuthStore();
 const toast = useToast();
 

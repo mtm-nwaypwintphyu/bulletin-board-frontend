@@ -52,13 +52,13 @@
               <tr v-if="!users.length"><td colspan="11" class="text-center py-3">There is no data.</td></tr>
               <tr v-for="(user,index) in users" :key="user.id" @click="showUserDetailModal(user)" class="clickable">
               <th scope="row">{{ index + 1 + (currentPage - 1) * perPage }}.</th>
-              <td>{{ user.name }}</td>
-              <td>{{ user.email }}</td>
-              <td>{{ user.creator.name }}</td>
-              <td>{{ user.type == 0 ? 'Admin' : 'User' }}</td>
-              <td>{{ user.phone }}</td>
-              <td>{{ user.dob }}</td>
-              <td>{{ user.address }}</td>
+              <td>{{ user?.name }}</td>
+              <td>{{ user?.email }}</td>
+              <td>{{ user?.creator?.name }}</td>
+              <td>{{ user?.type == 0 ? 'Admin' : 'User' }}</td>
+              <td>{{ user?.phone }}</td>
+              <td>{{ user?.dob }}</td>
+              <td>{{ user?.address }}</td>
               <td>{{ formatDate(user.created_at) }}</td>
               <td>{{ formatDate(user.updated_at) }}</td>
               <td>
