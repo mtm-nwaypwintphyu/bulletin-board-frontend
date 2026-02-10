@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useRuntimeConfig } from '#app'
 import { useAuthStore } from '#imports'
+import { useCookie } from '#app'
 
 export const useApi = () => {
   const config = useRuntimeConfig()
@@ -25,6 +26,7 @@ export const useApi = () => {
       const loginUrl = '/login';
       
       if (error.response?.status === 401 && error.config.url !== loginUrl) {
+        useCookie(TOKEN_COOKIE_NAME).value = null;
         await authStore.logout();
       }
       return Promise.reject(error);

@@ -229,6 +229,16 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(14px);
 }
+
+/* disabled slider */
+.switch-disabled .slider {
+  background-color: #677380b1;
+  cursor: not-allowed;
+}
+
+.switch-disabled input:checked + .slider {
+  background-color: #677380b1; 
+}
 /* modal close btn */
 .modal-close-btn {
   position: absolute;

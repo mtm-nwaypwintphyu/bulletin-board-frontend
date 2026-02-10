@@ -7,16 +7,14 @@
           <label for="title">Title</label>
           <input type="text" id="title" disabled v-model="title" required class="form-control" />
         </div>
-
         <div class="form-group px-3 my-3">
           <label for="description">Description</label>
           <textarea name="" id="" class="form-control" rows="8" disabled v-model="description"></textarea>
         </div>
-
         <div class="row d-flex justify-content-end align-items-center mb-2 m-auto">
           <div class="d-flex justify-content-end">
             <button type="submit" class="btn btn-sm btn-custom-blue m-1 p-2">Confirm</button>
-            <button @click.prevent="goToCreate" class="btn btn-sm btn-custom-red clear-btn m-1 p-2">Cancel</button>
+            <button @click.prevent="navigateTo('/post/create')" class="btn btn-sm btn-custom-red clear-btn m-1 p-2">Cancel</button>
           </div>
         </div>
       </form>
@@ -24,18 +22,44 @@
   </div>
 </template>
 <script setup>
-import { ref } from 'vue';
 import HeaderRow from '~/components/HeaderRow.vue';
-import { useRouter } from 'vue-router';
+import { usePostFormStore } from '#imports';
+import { usePostStore } from '#imports';
+import { useToast } from 'vue-toastification';
 
-const title = ref('');
-const description = ref('');
+const postForm = usePostFormStore();
+const postStore = usePostStore();
+const toast = useToast();
+const title = postForm.form.title;
+const description = postForm.form.description;
 
-const router = useRouter();
+const params = {
+  title,
+  description
+};
 
-function goToCreate() {
-  router.push('/post/create');
+const handleSubmit = async() => {
+  const response = await postStore.createPost(params)
+  if (postStore.error) {
+     const backendErrors = toRaw(postStore.error)?.errors || {};
+
+     const errorMessages = Object.values(backendErrors)
+      .flat()
+      .map(msg => msg.trim());
+
+      const toastMessage = errorMessages.length
+      ? errorMessages[0] + "!"
+      : postStore.error.message
+        ? postStore.error.message + "!"
+        : "Something went wrong!";
+      toast(toastMessage);
+  } else if (response?.success) {
+    toast("Post created successfully.");
+    postForm.clearForm()
+    navigateTo('/');
+  }
 }
+
 </script>
 
 <style scoped>

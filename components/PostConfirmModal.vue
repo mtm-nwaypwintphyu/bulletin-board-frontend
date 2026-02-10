@@ -30,7 +30,7 @@
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Status</td>
-                <td class="col-8 py-2">{{ data.status }}</td>
+                <td class="col-8 py-2">{{ data.status == 1 ? 'Active' : 'Inactive' }}</td>
               </tr>
             </tbody>
           </table>
@@ -70,7 +70,7 @@ const props = defineProps({
 });
 
 function confirmAction() {
-  emit('confirm');
+  emit('confirm', props.data);
 }
 
 function cancelAction() {
