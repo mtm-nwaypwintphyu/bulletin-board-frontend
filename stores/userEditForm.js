@@ -1,17 +1,16 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 
-export const useUserFormStore = defineStore('userForm', () => {
+export const useUserEditFormStore = defineStore('userEditForm', () => {
   const form = ref({
+    id: null,
     name: '',
-    email: '',
-    password: '',
-    password_confirmation: '',
     type: 'USER',
     phone: '',
     address: '',
     dob: '',
     profile: null,
+    oldProfile: null,
   });
 
   function setForm(data) {
@@ -20,15 +19,14 @@ export const useUserFormStore = defineStore('userForm', () => {
 
   function clearForm() {
     form.value = {
+      id: null,
       name: '',
-      email: '',
-      password: '',
-      password_confirmation: '',
       type: 'USER',
       phone: '',
       address: '',
       dob: '',
-      profile: null
+      profile: null,
+      oldProfile: null,
     };
   }
 

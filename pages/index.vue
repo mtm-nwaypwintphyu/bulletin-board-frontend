@@ -71,7 +71,7 @@
     </div>
 
     <ConfirmModal :isVisible="showDeleteModal" title="Delete Confirm"
-      :message="auth.user.type == 1 ? 'Are you sure to delete this post?' : 'Are you sure to inactivate this post status?'"
+      :message="auth.user?.type === 'USER' ? 'Are you sure to delete this post?' : 'Are you sure to inactivate this post status?'"
       :data="postDetail" @confirm="handleDelete" @cancel="closeModal" />
     <DetailModal :isVisible="showDetailModal" title="Post Detail" :data="postDetail" @cancel="closeModal" />
   </div>

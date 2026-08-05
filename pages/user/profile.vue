@@ -12,7 +12,7 @@
             style="width: 150px; height: 150px; object-fit: cover;"
           />
           <h5 class="mt-3 fw-bold">{{ user.name }}</h5>
-          <p class="text-muted">{{ user.type === 0 ? 'Admin' : 'User' }}</p>
+          <p class="text-muted">{{ user.type === 'ADMIN' ? 'Admin' : 'User' }}</p>
         </div>
         
         <div class="col-12 col-md-8">
@@ -25,8 +25,8 @@
               <tr>
                 <td class="col-4 fw-bold text-muted py-2">User Type</td>
                 <td class="col-8 py-2">
-                  <span :class="{'badge ': user.type === 0, 'badge bg-success': user.type === 1}">
-                    {{ user.type === 0 ? 'Admin' : 'Regular User' }}
+                  <span :class="{'badge ': user.type === 'ADMIN', 'badge bg-success': user.type === 'USER'}">
+                    {{ user.type === 'ADMIN' ? 'Admin' : 'Regular User' }}
                   </span>
                 </td>
               </tr>
@@ -62,17 +62,15 @@
 <script setup>
 import { ref } from 'vue';
 import HeaderRow from '~/components/HeaderRow.vue';
-import { useAuthStore } from '#imports';
-import { useRuntimeConfig } from '#imports';
+import { useAuthStore, useImageUrl } from '#imports';
 
 const auth = useAuthStore();
-const config = useRuntimeConfig();
+const { buildImageUrl } = useImageUrl();
 
-const assetsBase = config.public.assetsBase;
 const user = ref(auth.user)
 
 const imageUrl = computed(() => {
-  return user.value.profile ? `${assetsBase}/${user.value.profile}` : 'https://placehold.co/150x150/0d6efd/ffffff?text=Profile'
+  return buildImageUrl(user.value?.profile)
 })
 
 </script>

@@ -83,8 +83,8 @@ const handleReset = async () => {
     return
   }
 
-  if (password.value.length < 8) {
-    password_error.value = 'Password must be at least 8 characters!'
+  if (password.value.length < 6) {
+    password_error.value = 'Password must be at least 6 characters!'
     return
   }
 

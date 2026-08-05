@@ -26,7 +26,7 @@
         </ul>
 
         <ul class="navbar-nav align-items-center">
-          <li class="nav-item me-3" v-if="auth.user.type == 0">
+          <li class="nav-item me-3">
             <nuxt-link class="btn btn-outline-light" to="/admin/create-user">Create User</nuxt-link>
           </li>
 

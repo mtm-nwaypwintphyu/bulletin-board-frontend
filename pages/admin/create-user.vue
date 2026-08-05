@@ -36,12 +36,12 @@
           </div>
         </div>
 
-        <div class="row mb-3 align-items-center">
+        <div v-if="auth.isAdmin" class="row mb-3 align-items-center">
           <label for="type" class="col-md-3 col-form-label text-md-end">Type</label>
           <div class="col-md-9">
             <select name="type" v-model="userForm.form.type" class="form-select" id="type"> 
-              <option value="0">Admin</option>
-              <option value="1">User</option>
+              <option value="ADMIN">Admin</option>
+              <option value="USER">User</option>
             </select>
           </div>
         </div>
@@ -89,9 +89,10 @@
 <script setup>
 import { reactive } from 'vue'
 import HeaderRow from '~/components/HeaderRow.vue'
-import { useUserFormStore } from '#imports'
+import { useUserFormStore, useAuthStore } from '#imports'
 
 const userForm = useUserFormStore()
+const auth = useAuthStore()
 
 const errors = reactive({
   name: '',
@@ -104,11 +105,7 @@ function handleFileUpload(event) {
   const file = event.target.files[0]
   if (!file) return
 
-  const reader = new FileReader()
-  reader.onloadend = () => {
-    userForm.setProfilePhoto(reader.result)
-  }
-  reader.readAsDataURL(file)
+  userForm.setProfilePhoto(file)
 }
 
 const handleSubmit = () => {

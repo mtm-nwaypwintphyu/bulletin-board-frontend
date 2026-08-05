@@ -84,10 +84,10 @@ const handleLogin = async () => {
 
   const response = await auth.login(email.value, password.value, rememberMe.value)
   if (auth.error) {
-      errors.value.login = auth.error.message; 
-    } else if (response && response.success) {
+      errors.value.login = auth.error.message;
+    } else if (response && response.status === 'success') {
       toast("Loggedin successfully.");
-      navigateTo('/'); 
+      navigateTo('/');
     }
   }
 </script>

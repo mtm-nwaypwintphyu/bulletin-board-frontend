@@ -60,24 +60,22 @@ const handleChangePassword = async () => {
   };
 
   const params = {
-    current_password: current_password.value,
-    new_password: new_password.value,
-    new_confirm_password: new_confirm_password.value
+    currentPassword: current_password.value,
+    newPassword: new_password.value,
   };
 
   const result = await passwordStore.change(params);
   if (result.success) {
     toast(result.message || 'Password updated successfully!');
-    navigateTo('/login');
-    auth.logout();
+    await auth.logout();
     return;
   }
 
   if (result.errors) {
     errors.value = {
-      current_password: result.errors.current_password?.[0] || null,
-      new_password: result.errors.new_password?.[0] || null,
-      new_confirm_password: result.errors.new_confirm_password?.[0] || null
+      current_password: result.errors.currentPassword?.[0] || null,
+      new_password: result.errors.newPassword?.[0] || null,
+      new_confirm_password: null
     };
   }
 };

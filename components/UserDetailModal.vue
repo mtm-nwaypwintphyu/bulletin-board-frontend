@@ -37,12 +37,8 @@
                     <td class="col-8 py-2">{{ data.email }}</td>
                   </tr>
                   <tr>
-                    <td class="col-4 fw-bold py-2">Created User</td>
-                    <td class="col-8 py-2">{{ data.creator.name }}</td>
-                  </tr>
-                  <tr>
                     <td class="col-4 fw-bold py-2">Type</td>
-                    <td class="col-8 py-2">{{ data.type == 0 ? 'Admin' : 'User' }}</td>
+                    <td class="col-8 py-2">{{ data.type === 'ADMIN' ? 'Admin' : 'User' }}</td>
                   </tr>
                   <tr>
                     <td class="col-4 fw-bold py-2">Phone</td>
@@ -73,10 +69,8 @@
 </template>
 
 <script setup>
-import { useRuntimeConfig } from '#app'
+import { useImageUrl } from '#imports'
 const emit = defineEmits(['cancel']);
-const config = useRuntimeConfig()
-const assetsBase = config.public.assetsBase
 const props = defineProps({
   isVisible: {
     type: Boolean,
@@ -90,8 +84,9 @@ const props = defineProps({
     required: true
   }
 });
+const { buildImageUrl } = useImageUrl()
 const imageUrl = computed(() => {
-  return props.data.profile ? `${assetsBase}/${props.data.profile}` : 'https://via.placeholder.com/150/f8f9fa/343a40?text=User'
+  return buildImageUrl(props.data.profile, 'https://via.placeholder.com/150/f8f9fa/343a40?text=User')
 })
 
 function cancelAction() {
