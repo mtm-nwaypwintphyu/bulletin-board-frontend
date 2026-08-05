@@ -25,7 +25,7 @@
               <tr>
                 <td class="col-4 fw-bold text-muted py-2">User Type</td>
                 <td class="col-8 py-2">
-                  <span :class="{'badge ': user.type === 'ADMIN', 'badge bg-success': user.type === 'USER'}">
+                  <span :class="user.type === 'ADMIN' ? 'badge bg-primary' : 'badge bg-success'">
                     {{ user.type === 'ADMIN' ? 'Admin' : 'Regular User' }}
                   </span>
                 </td>

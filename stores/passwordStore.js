@@ -99,7 +99,7 @@ export const usePasswordStore = defineStore('password', {
         return errors
       }
 
-      if (status === 400) {
+      if (status === 400 || status === 401) {
         const field = data?.message?.toLowerCase().includes('token')
           ? 'token'
           : data?.message?.toLowerCase().includes('current')

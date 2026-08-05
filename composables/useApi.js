@@ -19,7 +19,8 @@ export const useApi = () => {
         error.config?.url?.includes('/auth/login') ||
         error.config?.url?.includes('/auth/register') ||
         error.config?.url?.includes('/auth/forgot-password') ||
-        error.config?.url?.includes('/auth/reset-password')
+        error.config?.url?.includes('/auth/reset-password') ||
+        error.config?.url?.includes('/auth/change-password')
 
       if (error.response?.status === 401 && !isAuthRequest) {
         authStore.clearAuth()

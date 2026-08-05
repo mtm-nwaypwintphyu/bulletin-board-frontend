@@ -59,6 +59,22 @@ const handleChangePassword = async () => {
     new_confirm_password: null
   };
 
+  if (!current_password.value) {
+    errors.value.current_password = 'Current password is required!'
+  }
+  if (!new_password.value) {
+    errors.value.new_password = 'New password is required!'
+  } else if (new_password.value.length < 6) {
+    errors.value.new_password = 'New password must be at least 6 characters long!'
+  }
+  if (!new_confirm_password.value) {
+    errors.value.new_confirm_password = 'Confirm new password is required!'
+  } else if (new_password.value !== new_confirm_password.value) {
+    errors.value.new_confirm_password = 'Passwords do not match!'
+  }
+
+  if (Object.values(errors.value).some(e => e)) return
+
   const params = {
     currentPassword: current_password.value,
     newPassword: new_password.value,
