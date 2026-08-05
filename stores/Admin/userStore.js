@@ -99,7 +99,9 @@ export const useUserStore = defineStore('user', {
       for (const [key, value] of Object.entries(data)) {
         if (value === undefined || value === null) continue
         if (key === 'profile') {
-          if (value instanceof File || value instanceof Blob) formData.append(key, value)
+          if (value instanceof File || value instanceof Blob || typeof value === 'string') {
+            formData.append(key, value)
+          }
           continue
         }
         if (key === 'password_confirmation') continue

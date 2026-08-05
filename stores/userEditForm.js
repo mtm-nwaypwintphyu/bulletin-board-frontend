@@ -11,6 +11,7 @@ export const useUserEditFormStore = defineStore('userEditForm', () => {
     dob: '',
     profile: null,
     oldProfile: null,
+    removeProfile: false,
   });
 
   function setForm(data) {
@@ -27,6 +28,7 @@ export const useUserEditFormStore = defineStore('userEditForm', () => {
       dob: '',
       profile: null,
       oldProfile: null,
+      removeProfile: false,
     };
   }
 

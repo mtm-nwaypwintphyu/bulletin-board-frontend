@@ -48,6 +48,9 @@
             <img :src="profilePreview" alt="New Profile" class="img-thumbnail"
               style="max-width: 150px; max-height: 150px; object-fit: cover;" />
           </div>
+          <div v-else-if="userForm.form.removeProfile">
+            <span class="text-danger">Profile photo will be removed</span>
+          </div>
           <div v-else>
             <span>No new photo uploaded</span>
           </div>

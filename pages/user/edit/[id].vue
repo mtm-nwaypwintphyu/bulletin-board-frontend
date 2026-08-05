@@ -56,9 +56,11 @@
 
         <div class="row my-3 align-items-center">
           <label class="col-md-3 col-form-label text-md-end">Profile</label>
-          <div class="col-md-8">
+          <div class="col-md-8 d-flex align-items-center gap-2">
             <img :src="imageUrl" alt="Profile Photo" class="img-fluid border border-3 shadow-sm"
               style="max-width: 150px; max-height: 150px; object-fit: cover;" />
+            <button v-if="old_pf && !removeProfile" type="button" class="btn btn-sm btn-custom-red"
+              @click="removePhoto">Remove</button>
           </div>
         </div>
 
@@ -108,11 +110,13 @@ const address = ref('');
 const type = ref('USER');
 const old_pf = ref(null);
 const new_pf = ref(null);
+const removeProfile = ref(false);
 
 const errors = reactive({ name: '' });
 
 const imageUrl = computed(() => {
   if (new_pf.value) return URL.createObjectURL(new_pf.value)
+  if (removeProfile.value) return buildImageUrl(null)
   return buildImageUrl(old_pf.value)
 });
 
@@ -120,6 +124,12 @@ function handleFileUpload(event) {
   const file = event.target.files[0]
   if (!file) return
   new_pf.value = file
+  removeProfile.value = false
+}
+
+function removePhoto() {
+  removeProfile.value = true
+  new_pf.value = null
 }
 
 onMounted(async () => {
@@ -152,8 +162,9 @@ const handleSubmit = async () => {
     phone: phone.value,
     dob: dob.value,
     address: address.value,
-    profile: new_pf.value,
+    profile: new_pf.value || (removeProfile.value ? '' : null),
     oldProfile: old_pf.value,
+    removeProfile: removeProfile.value,
   }
 
   if (auth.isAdmin) {
