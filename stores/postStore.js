@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia';
-import { useApi } from '#imports';
+import { defineStore } from "pinia";
+import { useApi } from "#imports";
 
-export const usePostStore = defineStore('post', {
+export const usePostStore = defineStore("post", {
   state: () => ({
     error: null,
     loading: false,
@@ -14,32 +14,11 @@ export const usePostStore = defineStore('post', {
       this.error = null;
       const api = useApi();
       try {
-        const response = await api.post('/posts/create', params);
+        const response = await api.post("/posts", params);
 
         return response;
       } catch (err) {
-        const status = err.response?.status;
-
-        if (status === 422) {
-          if (err.response?.data?.errors?.title) {
-            this.error = {
-              message: err.response?.data?.message || 'Validation failed',
-              errors: {
-                title: err.response?.data?.errors?.title,
-              },
-            };
-          } else {
-            this.error = {
-              message: err.response?.data?.message || 'Validation failed',
-              errors: err.response?.data?.errors || {},
-            };
-          }
-        } else {
-          this.error = {
-            message: err.message || 'Something went wrong',
-            errors: {},
-          };
-        }
+        this.error = this.normalizeError(err);
         return null;
       } finally {
         this.loading = false;
@@ -47,111 +26,73 @@ export const usePostStore = defineStore('post', {
     },
 
     // get posts
-    async fetchAllPosts(params = {}){
-      this.loading = true
-      this.error = null
-      const api = useApi()
+    async fetchAllPosts(params = {}) {
+      this.loading = true;
+      this.error = null;
+      const api = useApi();
 
       try {
-        const response = await api.get('/posts', { params })
+        const response = await api.get("/posts", { params });
 
-        return response
+        return response;
       } catch (err) {
-        const status = this.err.response?.status
-
-        if (status === 403) {
-          this.error = {
-            message: err.response.data.message || 'Forbidden',
-            errors: {}
-          }
-        } else {
-          this.error = {
-            message: err.message || 'Something went wrong',
-            errors: {}
-          }
-        }
-        return null
+        this.error = this.normalizeError(err);
+        return null;
       } finally {
-        this.loading= false
+        this.loading = false;
       }
     },
 
     // delete post
     async delete(deletePostId) {
-      this.loading = true
-      this.error = null
-      const api = useApi()
+      this.loading = true;
+      this.error = null;
+      const api = useApi();
 
       try {
-        const response = await api.del(`/posts/${deletePostId}`)
-        return response
-      } catch(err) {
-        this.error = {
-          message: err.message || 'Something went wrong',
-          errors: {}
-        }
+        const response = await api.del(`/posts/${deletePostId}`);
+        return response;
+      } catch (err) {
+        this.error = this.normalizeError(err);
+        return null;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     // get post detail
-    async fetchPostDetail(postId){
-      this.loading = true
-      this.error = null
-      const api = useApi()
+    async fetchPostDetail(postId) {
+      this.loading = true;
+      this.error = null;
+      const api = useApi();
 
       try {
-        const response = await api.get(`/posts/${postId}`)
+        const response = await api.get(`/posts/${postId}`);
 
-        return response
+        return response;
       } catch (err) {
-        const status = this.err.response?.status
-
-        if (status === 403) {
-          this.error = {
-            message: err.response.data.message || 'Forbidden',
-            errors: {}
-          }
-        } else {
-          this.error = {
-            message: err.message || 'Something went wrong',
-            errors: {}
-          }
-        }
-        return null
+        this.error = this.normalizeError(err);
+        return null;
       } finally {
-        this.loading= false
+        this.loading = false;
       }
     },
 
     // update post
     async updatePost(postId, params = {}) {
-      this.loading = true
-      this.error = null
-      const api = useApi()
+      this.loading = true;
+      this.error = null;
+      const api = useApi();
 
       try {
-        const response = await api.put(`/post/${postId}`,params)
+        const response = await api.patch(`/posts/${postId}`, params);
 
-        return response
+        return response;
       } catch (err) {
-        const status = this.err.response?.status
-
-        if (status === 403) {
-          this.error = {
-            message: err.response.data.message || 'Forbidden',
-            errors: {}
-          }
-        } else {
-          this.error = {
-            message: err.message || 'Something went wrong',
-            errors: {}
-          }
-        }
-        return null
+        this.error = this.normalizeError(err);
+        return null;
       } finally {
-        this.loading= false
+        this.loading = false;
       }
     },
 
@@ -162,121 +103,149 @@ export const usePostStore = defineStore('post', {
       const api = useApi();
 
       try {
-        const response = await api.post('/posts/import', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          }
-        });
+        const response = await api.post("/posts/import", formData);
 
-        if (response?.success) {
-          return response;
-        }
-
-        if (response?.errors?.length > 0) {
-          this.error = {
-            message: response?.message || 'Error importing CSV.',
-            errors: response?.errors || []
-          }
-        }
-        return null;
+        return response;
       } catch (err) {
-        const status = err.response?.status;
-        if (status === 422) {
-          this.error = {
-            message: err.response?.data?.message || 'Validation failed!',
-            errors: {}
-          };
-        } else if (status === 403) {
-          this.error = {
-            message: err.response?.message || 'Validation failed!',
-            errors: {}
-          };
-        }
+        this.error = this.normalizeError(err);
         return null;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
+    },
+
+    // export post csv
+    async exportPostCsv() {
+      this.loading = true;
+      this.error = null;
+      const api = useApi();
+
+      try {
+        const response = await api.download("/posts/export");
+        const disposition = response.headers["content-disposition"] || "";
+        const match = disposition.match(/filename="?([^";]+)"?/);
+        const filename = match ? match[1] : "posts_export.csv";
+
+        return { blob: response.data, filename };
+      } catch (err) {
+        this.error = await this.normalizeBlobError(err);
+        return null;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    normalizeError(err) {
+      const status = err.response?.status;
+      const data = err.response?.data;
+      const message = data?.message || err.message || "Something went wrong";
+
+      if (status === 400 && Array.isArray(data?.errors)) {
+        const errors = {};
+        for (const item of data.errors) {
+          if (!errors[item.field]) errors[item.field] = [];
+          errors[item.field].push(item.message);
+        }
+        return { message: data.message || "Validation failed", errors };
+      }
+
+      return { message, errors: {} };
+    },
+
+    async normalizeBlobError(err) {
+      let message = err.message || "Something went wrong";
+
+      try {
+        const blobText = await err.response?.data?.text?.();
+        if (blobText) {
+          const data = JSON.parse(blobText);
+          if (data?.message) message = data.message;
+        }
+      } catch (e) {
+        // keep fallback message
+      }
+
+      return { message, errors: {} };
     },
 
     // get import history
     async fetchAllImportHistory(params) {
-      this.loading = true
-      this.error = null
-      const api = useApi()
+      this.loading = true;
+      this.error = null;
+      const api = useApi();
 
       try {
-        const response = await api.get('/import-history', { params })
+        const response = await api.get("/posts/import-histories", { params });
 
-        return response
+        return response;
       } catch (err) {
-        const status = this.err.response?.status
+        const status = err.response?.status;
 
         if (status === 403) {
           this.error = {
-            message: err.response.data.message || 'Forbidden',
-            errors: {}
-          }
+            message: err.response.data.message || "Forbidden",
+            errors: {},
+          };
         } else {
           this.error = {
-            message: err.message || 'Something went wrong',
-            errors: {}
-          }
+            message: err.message || "Something went wrong",
+            errors: {},
+          };
         }
-        return null
+        return null;
       } finally {
-        this.loading= false
+        this.loading = false;
       }
     },
 
     // delete history
-    async deleteHistory(historyId)
-    {
-      this.loading = true
-      this.error = null
-      const api = useApi()
+    async deleteHistory(historyId) {
+      this.loading = true;
+      this.error = null;
+      const api = useApi();
 
       try {
-        const response = await api.del(`/import-history/${historyId}`)
-        return response
-      } catch(err) {
+        const response = await api.del(`/posts/import-histories/${historyId}`);
+        return response;
+      } catch (err) {
         this.error = {
-          message: err.message || 'Something went wrong',
-          errors: {}
-        }
+          message: err.message || "Something went wrong",
+          errors: {},
+        };
+        return null;
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
     // get post history
     async fetchAllPostHistory(params) {
-      this.loading = true
-      this.error = null
-      const api = useApi()
+      this.loading = true;
+      this.error = null;
+      const api = useApi();
 
       try {
-        const response = await api.get('/post-history', { params })
+        const response = await api.get("/posts/post-histories", { params });
 
-        return response
+        return response;
       } catch (err) {
-        const status = this.err.response?.status
+        const status = err.response?.status;
 
         if (status === 403) {
           this.error = {
-            message: err.response.data.message || 'Forbidden',
-            errors: {}
-          }
+            message: err.response.data.message || "Forbidden",
+            errors: {},
+          };
         } else {
           this.error = {
-            message: err.message || 'Something went wrong',
-            errors: {}
-          }
+            message: err.message || "Something went wrong",
+            errors: {},
+          };
         }
-        return null
+        return null;
       } finally {
-        this.loading= false
+        this.loading = false;
       }
     },
-
   },
 });

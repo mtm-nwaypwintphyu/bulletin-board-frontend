@@ -30,7 +30,7 @@
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Import Timestamp</td>
-                <td class="col-8 py-2">{{ data.import_timestamp }}</td>
+                <td class="col-8 py-2">{{ formatDate(data.import_timestamp) }}</td>
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Create User</td>
@@ -54,6 +54,9 @@
 </template>
 
 <script setup>
+import { useFormatDate } from '#imports';
+
+const { formatDate } = useFormatDate();
 const emit = defineEmits(['confirm', 'cancel']);
 const props = defineProps({
   isVisible: {

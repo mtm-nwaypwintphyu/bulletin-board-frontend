@@ -57,9 +57,9 @@
               <th scope="row"> {{ index + 1 + (currentPage - 1) * perPage }}. </th>
               <td>{{ post.title }}</td>
               <td>{{ post.description }}</td>
-              <td>{{ post.status == 1 ? "Active" : "Inactive" }}</td>
-              <td>{{ post.creator.name }}</td>
-              <td>{{ formatDate(post.created_at) }}</td>
+              <td>{{ post.status === 'ACTIVE' ? "Active" : "Inactive" }}</td>
+              <td>{{ post.createUsername }}</td>
+              <td>{{ formatDate(post.createdAt) }}</td>
               <td>
                 <button @click.stop="openConfirmModal(post)" class="btn btn-custom-red btn-sm me-1">Delete</button>
                 <button @click.stop="toEditPost(post)" class="btn btn-custom-blue btn-sm text-white">Edit</button>
@@ -71,7 +71,7 @@
     </div>
 
     <ConfirmModal :isVisible="showDeleteModal" title="Delete Confirm"
-      :message="auth.user?.type === 'USER' ? 'Are you sure to delete this post?' : 'Are you sure to inactivate this post status?'"
+      message="Are you sure to delete this post?"
       :data="postDetail" @confirm="handleDelete" @cancel="closeModal" />
     <DetailModal :isVisible="showDetailModal" title="Post Detail" :data="postDetail" @cancel="closeModal" />
   </div>
@@ -82,26 +82,22 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import HeaderRow from '~/components/HeaderRow.vue';
-import { useUserStore } from '~/stores/Admin/userStore';
 import ConfirmModal from '~/components/PostConfirmModal.vue';
 import DetailModal from '~/components/PostDetailModal.vue';
 import { usePostStore } from '#imports';
-import { useAuthStore } from '#imports';
 import { useToast } from 'vue-toastification';
 import Loading from '~/components/Loading.vue';
 import Pagination from '~/components/Pagination.vue';
 import { useRouter } from 'vue-router';
-import dayjs from 'dayjs';
+
+const { formatDate } = useFormatDate();
 
 const postStore = usePostStore();
-const auth = useAuthStore();
 const router = useRouter();
 const searchQuery = ref('');
 const toast = useToast();
 const showDeleteModal = ref(false);
 const showDetailModal = ref(false);
-
-const userStore = useUserStore();
 
 const currentPage = ref(1);
 const totalPages = ref(1);
@@ -120,21 +116,17 @@ const handleSearch = () => {
   getAllPosts(currentPage.value);
 }
 
-const formatDate = (date) => {
-  return date ? dayjs(date).format('YYYY-MM-DD') : ''
-}
-
 const getAllPosts = async (page = 1) => {
   const params = {
     search: searchQuery.value,
-    per_page: perPage,
+    limit: perPage,
     page
   }
 
   const response = await postStore.fetchAllPosts(params);
-  posts.value = response.data.data;
-  currentPage.value = response.data.current_page;
-  totalPages.value = response.data.last_page;
+  posts.value = response.data.posts;
+  currentPage.value = response.data.pagination.page;
+  totalPages.value = response.data.pagination.totalPages;
 }
 
 const handlePageChange = (newPage) => {
@@ -157,9 +149,8 @@ function closeModal() {
   showDetailModal.value = false;
 }
 
-function handleDelete(post) {
-  confirmDeletePost(post.id)
-  getAllPosts(currentPage.value);
+async function handleDelete(post) {
+  await confirmDeletePost(post.id);
   closeModal();
 }
 
@@ -167,11 +158,11 @@ const confirmDeletePost = async (id) => {
   const response = await postStore.delete(id);
 
   if (postStore.error) {
-    toast(postStore.error)
-  } else if (response && response.success) {
-    toast(response.message);
-    getAllPosts(currentPage.value)
+    toast(postStore.error.message || 'Something went wrong!')
+    return;
   }
+  toast(response?.data?.message || 'Post deleted successfully.');
+  getAllPosts(currentPage.value);
 }
 
 const toEditPost = (post) => {
@@ -179,50 +170,26 @@ const toEditPost = (post) => {
 }
 
 const downloadPost = async () => {
-  try {
-    const response = await postStore.fetchAllPosts({ search: searchQuery.value, per_page: 100000 });
-    const allPosts = response.data.data;
+  const result = await postStore.exportPostCsv();
 
-    if (!allPosts.length) {
-      toast("No posts available to download.");
-      return;
-    }
-
-    const headers = ["ID.", "Post Title", "Post Description", "Status", "Create User Id", "Updated User Id", "Deleted User ID", "Deleted at", "Created at", "Updated at"];
-
-    const rows = allPosts.map((post, index) => [
-      index + 1,
-      post.title,
-      post.description,
-      post.status == 1 ? "Active" : "Inactive",
-      post.create_user_id,
-      post.updated_user_id,
-      post.deleted_user_id,
-      post.deleted_at,
-      formatDate(post.created_at),
-      formatDate(post.updated_at)
-    ]);
-
-    const csvContent = [
-      headers.join(","),
-      ...rows.map(row => row.join(","))
-    ].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-
-    const link = document.createElement("a");
-    if (link.download !== undefined) {
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", "posts.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  } catch (error) {
-    console.error("Error downloading posts:", error);
-    toast("Failed to download posts. Please try again.");
+  if (postStore.error) {
+    toast(postStore.error.message || 'Failed to download posts. Please try again.');
+    return;
   }
+
+  if (!result?.blob) {
+    toast('Failed to download posts. Please try again.');
+    return;
+  }
+
+  const url = URL.createObjectURL(result.blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = result.filename || 'posts_export.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 };
 
 </script>

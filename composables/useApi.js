@@ -40,6 +40,7 @@ export const useApi = () => {
   const put = async (url, data, options = {}) => (await api.put(url, data, options)).data
   const patch = async (url, data, options = {}) => (await api.patch(url, data, options)).data
   const del = async (url, options = {}) => (await api.delete(url, options)).data
+  const download = async (url, options = {}) => await api.get(url, { responseType: 'blob', ...options })
 
-  return { get, post, put, patch, del }
+  return { get, post, put, patch, del, download }
 }

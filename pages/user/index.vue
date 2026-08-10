@@ -34,7 +34,7 @@
               <td>{{ user?.email }}</td>
               <td>{{ user?.type === 'ADMIN' ? 'Admin' : 'User' }}</td>
               <td>{{ user?.phone }}</td>
-              <td>{{ user?.dob }}</td>
+              <td>{{ formatDate(user?.dob) }}</td>
               <td>{{ user?.address }}</td>
               <td>{{ formatDate(user.createdAt) }}</td>
               <td>{{ formatDate(user.updatedAt) }}</td>
@@ -83,10 +83,10 @@ import DetailModal from '~/components/UserDetailModal.vue';
 import ConfirmModal from '~/components/UserConfirmModal.vue';
 import Pagination from '~/components/Pagination.vue';
 import Loading from '~/components/Loading.vue';
-import dayjs from 'dayjs';
 import { useUserStore } from '~/stores/Admin/userStore';
 import { useToast } from 'vue-toastification';
 
+const { formatDate } = useFormatDate();
 const userStore = useUserStore();
 const toast = useToast();
 
@@ -111,10 +111,6 @@ const getAllUsers = async(page = 1) => {
   users.value = result.users;
   currentPage.value = result.pagination.page;
   totalPages.value = result.pagination.totalPages;
-}
-
-const formatDate = (date) => {
-  return date ? dayjs(date).format('YYYY-MM-DD'): ''
 }
 
 const handlePageChange = (newPage) => {

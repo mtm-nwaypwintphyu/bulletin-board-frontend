@@ -55,7 +55,7 @@ const handleSubmit = async() => {
   const params = {
     title: postForm.form.title,
     description: postForm.form.description,
-    status: postForm.form.status ? 1 : 0
+    status: postForm.form.status ? 'ACTIVE' : 'INACTIVE'
   }
 
   const response = await postStore.updatePost(postForm.form.id, params)
@@ -67,7 +67,7 @@ const handleSubmit = async() => {
       ? errorMessages[0] + "!": postStore.error.message ? postStore.error.message + "!" : "Something went wrong!";
 
       toast(toastMessage);
-  } else if (response && response.success) {
+  } else if (response && response.status === 'success') {
     toast("Post updated successfully.");
     postForm.clearForm()
     navigateTo('/')

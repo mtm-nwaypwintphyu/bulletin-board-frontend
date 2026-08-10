@@ -6,10 +6,13 @@
         Download CSV Template
         <Icon name="material-symbols:download" class="fs-5 align-items-center" />
       </button>
+      <small class="d-block px-3 mb-2 text-muted">
+        Columns: title, description
+      </small>
       <form @submit.prevent="handleSubmit" enctype="multipart/form-data">
         <div class="form-group px-3 my-4">
           <label for="username">CSV File</label>
-          <input @change="handleFileChange" type="file" id="username" class="form-control" accept=".csv,.txt" />
+          <input @change="handleFileChange" type="file" id="username" class="form-control" accept=".csv" />
         </div>
 
         <div class="row d-flex justify-content-end align-items-center mb-2 m-auto">
@@ -36,23 +39,26 @@ const file = ref(null);
 const postStore = usePostStore();
 
 const handleCsvTemplateDownload = () => {
-  const headers = ['title','description']
+  const headers = ['title', 'description']
 
   const rows = [
-    ['Sample Title 7', 'Sample Description 3'],
-    ['Sample Title 8', 'Sample Description 4']
+    ['Sample Title 1', 'Sample description for the first post.'],
+    ['Sample Title 2', 'Sample description for the second post.']
   ]
 
   const csvContent = [
     headers.join(','),
     ...rows.map(r => r.join(','))
   ].join('\n')
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' })
   const link = document.createElement('a')
   link.href = URL.createObjectURL(blob)
   link.download = 'post_import_template.csv'
+  document.body.appendChild(link)
   link.click()
-  URL.removeObjectURL(link.href)
+  document.body.removeChild(link)
+  URL.revokeObjectURL(link.href)
 }
 
 const handleFileChange = (event) => {
@@ -64,26 +70,30 @@ const handleFileChange = (event) => {
 const handleSubmit = async() => {
   if(!file.value) {
     alert("Please selecte a file!");
+    return;
   }
   const formData = new FormData();
-  formData.append('file', file.value);
+  formData.append('posts', file.value);
 
   const response = await postStore.importPostCsv(formData);
 
   if(postStore.error) {
-    const backendErrors = postStore.error?.errors || {};
-    const errorMessages = Object.values(backendErrors).flat().map(msg => msg.trim());
-    const toastMessage = errorMessages.length
-      ? errorMessages + "!"
-      : postStore.error.message
-      ? postStore.error.message + "!"
-      : "Something went wrong!";
-
-    toast(toastMessage)
-  } else if (response?.success) {
-    toast(response?.message)
-    navigateTo('/')
+    toast(postStore.error.message || 'Something went wrong!')
+    return;
   }
+
+  const { count = 0, skipped = 0, errors = [] } = response?.data || {};
+
+  if (errors.length) {
+    toast.error(
+      `Imported ${count} post(s), skipped ${skipped}. ` +
+      errors.slice(0, 3).map(e => `Row ${e.row}: ${e.message}`).join(' ') +
+      (errors.length > 3 ? ` (+${errors.length - 3} more)` : '')
+    );
+  } else {
+    toast.success(`Imported ${count} post(s) successfully.`);
+  }
+  navigateTo('/')
 }
 </script>
 

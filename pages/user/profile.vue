@@ -40,7 +40,7 @@
               </tr>
               <tr>
                 <td class="col-4 fw-bold text-muted py-2">Date of Birth</td>
-                <td class="col-8 py-2">{{ user.dob }}</td>
+                <td class="col-8 py-2">{{ formatDate(user.dob) }}</td>
               </tr>
               <tr>
                 <td class="col-4 fw-bold text-muted py-2">Address</td>
@@ -62,8 +62,9 @@
 <script setup>
 import { ref } from 'vue';
 import HeaderRow from '~/components/HeaderRow.vue';
-import { useAuthStore, useImageUrl } from '#imports';
+import { useAuthStore, useFormatDate, useImageUrl } from '#imports';
 
+const { formatDate } = useFormatDate();
 const auth = useAuthStore();
 const { buildImageUrl } = useImageUrl();
 

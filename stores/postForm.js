@@ -5,7 +5,7 @@ export const usePostFormStore = defineStore('postForm', () => {
   const form = ref({
     title: '',
     description: '',
-    status: 1
+    status: true
   });
 
   function setForm(data) {
@@ -16,7 +16,7 @@ export const usePostFormStore = defineStore('postForm', () => {
     form.value = {
       title: '',
       description: '',
-      status: 1
+      status: true
     };
   }
 

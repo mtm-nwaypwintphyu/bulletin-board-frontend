@@ -5,7 +5,7 @@
       <form @submit.prevent="handleSubmit">
         <div class="form-group px-3 my-3">
           <label class="required-label" for="title">Title</label>
-          <input type="text" id="title"  v-model="postForm.form.title" class="form-control" />
+          <input type="text" id="title" v-model="postForm.form.title" class="form-control" />
           <small v-if="errors.title" class="error-box">{{ errors.title }}</small>
         </div>
         <div class="form-group px-3 my-3">
@@ -36,16 +36,45 @@ const errors = reactive({
   description: ''
 })
 
+const MAX_TITLE_LENGTH = 255
+const MAX_DESCRIPTION_LENGTH = 255
+
+watch(() => postForm.form.title, (val) => {
+  const title = val?.trim() ?? ''
+  if (title.length > MAX_TITLE_LENGTH) {
+    errors.title = `Title cannot exceed ${MAX_TITLE_LENGTH} characters!`
+  } else if (errors.title === `Title cannot exceed ${MAX_TITLE_LENGTH} characters!`) {
+    errors.title = ''
+  }
+})
+
+watch(() => postForm.form.description, (val) => {
+  const description = val?.trim() ?? ''
+  if (description.length > MAX_DESCRIPTION_LENGTH) {
+    errors.description = `Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters!`
+  } else if (errors.description === `Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters!`) {
+    errors.description = ''
+  }
+})
+
 const handleSubmit = () => {
   // reset errors
   Object.keys(errors).forEach(key => errors[key] = '')
 
-  if (!postForm.form.title) errors.title = "Post title is required!"
-  if (!postForm.form.description) errors.description = "Post description is required!"
+  const title = postForm.form.title?.trim() ?? ''
+  const description = postForm.form.description?.trim() ?? ''
+
+  if (!title) errors.title = "Post title is required!"
+  else if (title.length < 2) errors.title = "Title must be at least 2 characters long!"
+  else if (title.length > MAX_TITLE_LENGTH) errors.title = `Title cannot exceed ${MAX_TITLE_LENGTH} characters!`
+
+  if (!description) errors.description = "Post description is required!"
+  else if (description.length < 1) errors.description = "Description must be at least 1 character long!"
+  else if (description.length > MAX_DESCRIPTION_LENGTH) errors.description = `Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters!`
 
   if (Object.values(errors).some(e => e)) return
   // create post form copy
-  const params = { ...postForm }
+  const params = { ...postForm.form }
   postForm.setForm(params)
   navigateTo('/post/create-confirm')
 }

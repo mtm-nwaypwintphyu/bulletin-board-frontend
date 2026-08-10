@@ -30,7 +30,7 @@
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Status</td>
-                <td class="col-8 py-2">{{ data.status == 1 ? 'Active' : 'Inactive' }}</td>
+                <td class="col-8 py-2">{{ data.status === 'ACTIVE' ? 'Active' : 'Inactive' }}</td>
               </tr>
             </tbody>
           </table>

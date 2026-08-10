@@ -38,7 +38,7 @@
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Date of Birth</td>
-                <td class="col-8 py-2">{{ data.dob }}</td>
+                <td class="col-8 py-2">{{ formatDate(data.dob) }}</td>
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Address</td>
@@ -62,6 +62,9 @@
 </template>
 
 <script setup>
+import { useFormatDate } from '#imports';
+
+const { formatDate } = useFormatDate();
 const emit = defineEmits(['confirm', 'cancel']);
 const props = defineProps({
   isVisible: {

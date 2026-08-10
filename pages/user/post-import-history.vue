@@ -21,11 +21,11 @@
             <tr v-if="!importHistory.length"><td colspan="7" class="text-center py-3">No import history found.</td></tr>
             <tr v-for="(history, index) in importHistory" :key="history.id">
               <th scope="row"> {{ index + 1 + (currentPage-1) * perPage }}. </th>
-              <td>{{ history.import_file }}</td>
-              <td>{{ formatDate(history.import_timestamp) }}</td>
-              <td>{{ history.records_imported }}</td>
+              <td>{{ history.importFile }}</td>
+              <td>{{ formatDate(history.importTimestamp) }}</td>
+              <td>{{ history.recordsImported }}</td>
               <td>{{ history.status }}</td>
-              <td>{{ history.user.name }}</td>
+              <td>{{ history.user }}</td>
               <td>
                 <button @click.stop="openDeleteModal(history)" class="btn btn-custom-red btn-sm me-1">Delete</button>
               </td>
@@ -65,8 +65,8 @@ import { usePostStore } from '#imports';
 import { useToast } from 'vue-toastification';
 import Loading from '~/components/Loading.vue';
 import Pagination from '~/components/Pagination.vue';
-import dayjs from 'dayjs';
 
+const { formatDate } = useFormatDate();
 const postStore = usePostStore();
 const toast = useToast();
 const showDeleteModal = ref(false);
@@ -78,23 +78,19 @@ const importHistory = ref([]);
 
 onMounted(() => {
   getAllImportHistory(currentPage.value)
-  console.log("imp", importHistory.value)
 });
-
-const formatDate = (date) => {
-  return date ? dayjs(date).format('YYYY-MM-DD') : '';
-}
 
 const getAllImportHistory = async (page = 1) => {
   const params = {
-    per_page: perPage,
+    limit: perPage,
     page
   };
 
   const response = await postStore.fetchAllImportHistory(params);
-  importHistory.value = response.data.data;
-  currentPage.value = response.data.current_page;
-  totalPages.value = response.data.last_page;
+  if (!response) return;
+  importHistory.value = response.data.histories;
+  currentPage.value = response.data.pagination.page;
+  totalPages.value = response.data.pagination.totalPages;
 };
 
 const handlePageChange = (newPage) => {
@@ -111,20 +107,20 @@ function closeModal() {
   showDeleteModal.value = false;
 }
 
-function handleDelete(history) {
-  confirmDeleteHistory(history.id);
-  getAllImportHistory(currentPage.value);
+async function handleDelete(history) {
+  await confirmDeleteHistory(history.id);
+  await getAllImportHistory(currentPage.value);
   closeModal();
 }
 
 const confirmDeleteHistory = async (id) => {
-  const response = await postStore.deleteHistory(id);
+  await postStore.deleteHistory(id);
 
   if (postStore.error) {
-    toast(postStore.error);
-  } else if (response && response.success) {
-    toast(response.message);
+    toast(postStore.error.message || 'Something went wrong!');
+    return;
   }
+  toast('Import history deleted successfully.');
 };
 </script>
 

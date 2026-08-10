@@ -23,24 +23,28 @@
                 <td class="col-8 py-2">{{ data.title }}</td>
               </tr>
               <tr>
-                <td class="col-4 fw-bold py-2">Created Date</td>
+                <td class="col-4 fw-bold py-2">Description</td>
                 <td class="col-8 py-2">{{ data.description }}</td>
               </tr>
               <tr>
+                <td class="col-4 fw-bold py-2">Created Date</td>
+                <td class="col-8 py-2">{{ formatDate(data.createdAt) }}</td>
+              </tr>
+              <tr>
                 <td class="col-4 fw-bold py-2">Created User</td>
-                <td class="col-8 py-2">{{ data.creator.name }}</td>
+                <td class="col-8 py-2">{{ data.createUsername }}</td>
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Status</td>
-                <td class="col-8 py-2">{{ data.status == 1 ? "Active" : "Inactive" }}</td>
+                <td class="col-8 py-2">{{ data.status === 'ACTIVE' ? "Active" : "Inactive" }}</td>
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Updated Date</td>
-                <td class="col-8 py-2">{{ formatDate(data.created_at) }}</td>
+                <td class="col-8 py-2">{{ formatDate(data.updatedAt) }}</td>
               </tr>
               <tr>
                 <td class="col-4 fw-bold py-2">Updated User</td>
-                <td class="col-8 py-2">{{ data.creator.name }}</td>
+                <td class="col-8 py-2">{{ data.updatedUserName }}</td>
               </tr>
             </tbody>
           </table>
@@ -56,7 +60,9 @@
 </template>
 
 <script setup>
-import dayjs from 'dayjs';
+import { useFormatDate } from '#imports';
+
+const { formatDate } = useFormatDate();
 const emit = defineEmits(['cancel']);
 const props = defineProps({
   isVisible: {
@@ -72,9 +78,6 @@ const props = defineProps({
   }
 });
 
-const formatDate = (date) => {
-  return date ? dayjs(date).format('YYYY-MM-DD'): ''
-}
 function cancelAction() {
   emit('cancel');
 }

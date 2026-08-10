@@ -53,7 +53,7 @@ const handleSubmit = async() => {
         ? postStore.error.message + "!"
         : "Something went wrong!";
       toast(toastMessage);
-  } else if (response?.success) {
+  } else if (response?.status === 'success') {
     toast("Post created successfully.");
     postForm.clearForm()
     navigateTo('/');

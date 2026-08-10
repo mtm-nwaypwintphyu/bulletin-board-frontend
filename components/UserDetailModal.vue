@@ -46,7 +46,7 @@
                   </tr>
                   <tr>
                     <td class="col-4 fw-bold py-2">Date of Birth</td>
-                    <td class="col-8 py-2">{{ data.dob }}</td>
+                    <td class="col-8 py-2">{{ formatDate(data.dob) }}</td>
                   </tr>
                   <tr>
                     <td class="col-4 fw-bold py-2">Address</td>
@@ -69,7 +69,9 @@
 </template>
 
 <script setup>
-import { useImageUrl } from '#imports'
+import { useFormatDate, useImageUrl } from '#imports'
+
+const { formatDate } = useFormatDate();
 const emit = defineEmits(['cancel']);
 const props = defineProps({
   isVisible: {
